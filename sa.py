@@ -1,11 +1,12 @@
 #!/bin/env python
 
-import random, numpy as np, math, copy, sys, argparse, matplotlib.pyplot as plt
+import random, time, numpy as np, math, copy, sys, argparse, matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", help="dataset file", default=False)
 parser.add_argument("-n", help="noninteractive", default=False)
 args = parser.parse_args()
+time_start = None
 
 # Déclaration de fonctions
 def generate_cities(howmany = 15, max_coordinates = 100):
@@ -53,7 +54,7 @@ def distance(tour, cities):
     return sum([math.sqrt(sum([(cities[tour[(k+1) % city_count]][d] - cities[tour[k % city_count]][d])**2 for d in [0,1] ])) for k in range(city_count)])
 
 def temperature_noninteractive():
-    return numpy.logspace(0,5,num=100000)[::-1]
+    return np.logspace(0,5,num=100000)[::-1]
 
 def temperature_interactive():
     alpha = 0.999
@@ -108,8 +109,9 @@ def SA(cities, temperatures):
 
             if(iteration % 5000 == 0):
                 print("Iteration: " + str(iteration))
-                print("New distance: " + str(newTotalDist))
-                print("Best distance: " + str(lowest_distance))
+                print("Elapsed: {:10.4f}s".format(time.time() - time_start))
+                print("New distance: {:10.4f}".format(newTotalDist))
+                print("Best distance: {:10.4f}".format(lowest_distance))
                 print("Temperature: " + str(temperature))
                 print("======")
                 live_plot(lowest_tour, cities)
@@ -128,6 +130,7 @@ def SA(cities, temperatures):
 plt.ion()
 plt.show()
 external_dataset = dataset_name()
+time_start = time.time()
 if external_dataset:
     cities = import_dataset(external_dataset)
 else:
