@@ -1,6 +1,6 @@
 #!/bin/env python
 
-import random, drawnow, numpy, math, copy, sys, argparse, matplotlib.pyplot as plt
+import random, numpy as np, math, copy, sys, argparse, matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", help="dataset file", default=False)
@@ -10,7 +10,6 @@ args = parser.parse_args()
 # Déclaration de fonctions
 def generate_cities(howmany = 15, max_coordinates = 100):
     return [random.sample(range(max_coordinates), 2) for _ in range(howmany)]
-
 
 def generate_random_tour(cities):
     city_count = len(cities)
@@ -61,7 +60,7 @@ def temperature_interactive():
     temp = 10 ** 25
     while True:
         temp = alpha * temp
-        if temp < 0.01:
+        if temp < 0.1:
             temp = 10 ** 5
         yield temp
 
@@ -76,8 +75,11 @@ def explain_tour(tour, cities):
 
 def live_plot(tour, cities):
     city_count = len(cities)
+    cities_x = [cities[tour[i % city_count]][0] for i in range(city_count + 1)]
+    cities_y = [cities[tour[i % city_count]][1] for i in range(city_count + 1)]
+
     plt.clf()
-    plt.plot([cities[tour[i % city_count]][0] for i in range(city_count + 1)], [cities[tour[i % city_count]][1] for i in range(city_count + 1)], 'xb-')
+    plt.plot(cities_x, cities_y, 'xb-')
     plt.pause(0.1)
 
 
@@ -86,12 +88,12 @@ def SA(cities, temperatures):
     tour = generate_good_random_tour(cities)
     city_count = len(cities)
     lowest_tour = None
-    lowest_distance = 10000
+    lowest_distance = np.inf
     try:
         for temperature in temperatures():
             iteration = iteration + 1
             [i,j] = sorted(random.sample(range(city_count),2))
-            newTour = tour[:i] + tour[j:j+1] +  tour[i+1:j] + tour[i:i+1] + tour[j+1:]
+            newTour = tour[:i] + tour[j:j+1] + tour[i+1:j] + tour[i:i+1] + tour[j+1:]
 
             oldDistances = distance_between(tour, cities, i, j)
             newDistances = distance_between(newTour, cities, i, j)
@@ -117,10 +119,8 @@ def SA(cities, temperatures):
 
 
     if lowest_tour == None:
-        print("retiurn tour")
         return tour
     else:
-        print("return lwoeshy")
         return lowest_tour
 
 
@@ -135,9 +135,6 @@ else:
 
 city_count = len(cities)
 
-# print(distance([0, 1, 2], [[1, 1], [1, 7], [9, 1]]))
-# sys.exit()
-
 # Application de la métaheuristique
 if args.n:
     # Non interactif: On est dans une range de solutions relativement petite
@@ -148,7 +145,5 @@ else:
     print("Run interactif, Ctrl+c quand fini")
     tour = SA(cities, temperature_interactive)
 
-# Affichage graphique
+# Affichage de détails
 explain_tour(tour, cities)
-#plt.plot([cities[tour[i % city_count]][0] for i in range(city_count + 1)], [cities[tour[i % city_count]][1] for i in range(city_count + 1)], 'xb-')
-#plt.show()
