@@ -4,3 +4,4 @@ include/
 share/
 instances/
 lib/
+__pycache__/

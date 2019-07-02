@@ -1,6 +1,11 @@
 #!/bin/env python
 
-import random, numpy, math, copy, sys, matplotlib.pyplot as plt
+import random, numpy, math, copy, sys, argparse, matplotlib.pyplot as plt
+
+parser = argparse.ArgumentParser()
+parser.add_argument("d", help="dataset file")
+parser.add_argument("n", help="noninteractive")
+args = parser.parse_args()
 
 # Déclaration de fonctions
 def generate_cities(howmany = 15, max_coordinates = 100):
@@ -50,6 +55,8 @@ def SA(cities):
 
 
 # Initialisation des données
+print(args)
+sys.exit()
 external_dataset = dataset_name()
 if external_dataset:
     cities = import_dataset(external_dataset)
