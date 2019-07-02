@@ -7,6 +7,7 @@ parser.add_argument("-d", help="dataset file", default=False)
 parser.add_argument("-n", help="noninteractive", default=False)
 args = parser.parse_args()
 time_start = None
+report_file = open("report.csv", "w")
 
 # Déclaration de fonctions
 def generate_cities(howmany = 15, max_coordinates = 100):
@@ -83,6 +84,9 @@ def live_plot(tour, cities):
     plt.plot(cities_x, cities_y, 'xb-')
     plt.pause(0.1)
 
+def report(what):
+    report_file.write(what + "\n")
+
 
 def SA(cities, temperatures):
     iteration = 0
@@ -90,6 +94,7 @@ def SA(cities, temperatures):
     city_count = len(cities)
     lowest_tour = None
     lowest_distance = np.inf
+    report("iterations,temps,distance,temperature")
     try:
         for temperature in temperatures():
             iteration = iteration + 1
@@ -108,12 +113,14 @@ def SA(cities, temperatures):
                 lowest_tour = copy.copy(tour)
 
             if(iteration % 5000 == 0):
+                seconds_elapsed = time.time() - time_start
                 print("Iteration: " + str(iteration))
-                print("Elapsed: {:10.4f}s".format(time.time() - time_start))
+                print("Elapsed: {:10.4f}s".format(seconds_elapsed))
                 print("New distance: {:10.4f}".format(newTotalDist))
                 print("Best distance: {:10.4f}".format(lowest_distance))
                 print("Temperature: " + str(temperature))
                 print("======")
+                report("{},{},{},{}".format(iteration, seconds_elapsed, lowest_distance, temperature))
                 live_plot(lowest_tour, cities)
     
     except KeyboardInterrupt:
@@ -147,6 +154,8 @@ else:
     # Interactif: tourne à l'infini jusqu'à l'arrêt
     print("Run interactif, Ctrl+c quand fini")
     tour = SA(cities, temperature_interactive)
+
+report_file.close()
 
 # Affichage de détails
 explain_tour(tour, cities)
