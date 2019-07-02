@@ -1,6 +1,6 @@
 #!/bin/env python
 
-import random, numpy, math, copy, sys, argparse, matplotlib.pyplot as plt
+import random, drawnow, numpy, math, copy, sys, argparse, matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", help="dataset file", default=False)
@@ -15,6 +15,19 @@ def generate_cities(howmany = 15, max_coordinates = 100):
 def generate_random_tour(cities):
     city_count = len(cities)
     return random.sample(range(city_count), city_count)
+
+def generate_good_random_tour(cities, howmany=10000):
+    best_tour = generate_random_tour(cities)
+    lowest = distance(best_tour, cities)
+    for _ in range(howmany):
+        tour = generate_random_tour(cities)
+        dist = distance(tour, cities)
+        if dist < lowest:
+            lowest = dist
+            best_tour = copy.copy(tour)
+
+    print("Lowest tour has distance {}".format(lowest))
+    return best_tour
 
 def import_dataset(filename):
     with open(filename) as fp:  
@@ -40,22 +53,37 @@ def distance(tour, cities):
     city_count = len(cities)
     return sum([math.sqrt(sum([(cities[tour[(k+1) % city_count]][d] - cities[tour[k % city_count]][d])**2 for d in [0,1] ])) for k in range(city_count)])
 
-
 def temperature_noninteractive():
     return numpy.logspace(0,5,num=100000)[::-1]
 
 def temperature_interactive():
-    alpha = 0.99
-    temp = 10 ** 5
+    alpha = 0.999
+    temp = 10 ** 25
     while True:
         temp = alpha * temp
+        if temp < 0.01:
+            temp = 10 ** 5
         yield temp
-        
+
+def explain_tour(tour, cities):
+    lgth = len(tour)
+    for step in range(lgth):
+        curr = tour[step % lgth]
+        next = tour[(step + 1) % lgth]
+        distance = distance_between(tour, cities, step, step + 1)
+
+        print("{} -> {}  \t(distance: {:10.4f})\t From {}, To: {}".format(curr, next, distance, cities[curr], cities[next]))
+
+def live_plot(tour, cities):
+    city_count = len(cities)
+    plt.clf()
+    plt.plot([cities[tour[i % city_count]][0] for i in range(city_count + 1)], [cities[tour[i % city_count]][1] for i in range(city_count + 1)], 'xb-')
+    plt.pause(0.1)
 
 
 def SA(cities, temperatures):
     iteration = 0
-    tour = generate_random_tour(cities)
+    tour = generate_good_random_tour(cities)
     city_count = len(cities)
     lowest_tour = None
     lowest_distance = 10000
@@ -67,7 +95,6 @@ def SA(cities, temperatures):
 
             oldDistances = distance_between(tour, cities, i, j)
             newDistances = distance_between(newTour, cities, i, j)
-            oldTotalDist = distance(tour, cities)
             newTotalDist = distance(newTour, cities)
 
             if math.exp( (oldDistances - newDistances) / temperature) > random.random():
@@ -80,9 +107,10 @@ def SA(cities, temperatures):
             if(iteration % 5000 == 0):
                 print("Iteration: " + str(iteration))
                 print("New distance: " + str(newTotalDist))
-                print("Old distance: " + str(oldTotalDist))
                 print("Best distance: " + str(lowest_distance))
+                print("Temperature: " + str(temperature))
                 print("======")
+                live_plot(lowest_tour, cities)
     
     except KeyboardInterrupt:
         print("Interrupted")
@@ -97,6 +125,8 @@ def SA(cities, temperatures):
 
 
 # Initialisation des données
+plt.ion()
+plt.show()
 external_dataset = dataset_name()
 if external_dataset:
     cities = import_dataset(external_dataset)
@@ -105,8 +135,8 @@ else:
 
 city_count = len(cities)
 
-print(distance([0, 1, 2, 3], [[1, 1], [2, 1], [2, 2], [1, 2]]))
-sys.exit()
+# print(distance([0, 1, 2], [[1, 1], [1, 7], [9, 1]]))
+# sys.exit()
 
 # Application de la métaheuristique
 if args.n:
@@ -119,5 +149,6 @@ else:
     tour = SA(cities, temperature_interactive)
 
 # Affichage graphique
-plt.plot([cities[tour[i % city_count]][0] for i in range(city_count + 1)], [cities[tour[i % city_count]][1] for i in range(city_count + 1)], 'xb-')
-plt.show()
+explain_tour(tour, cities)
+#plt.plot([cities[tour[i % city_count]][0] for i in range(city_count + 1)], [cities[tour[i % city_count]][1] for i in range(city_count + 1)], 'xb-')
+#plt.show()
