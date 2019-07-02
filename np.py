@@ -29,25 +29,27 @@ def import_dataset(filename):
 
         return arr
     
-
 def dataset_name():
     return args.d
 
-def distance(tour, cities):
+def distance_between(tour, cities, i, j):
     city_count = len(cities)
     return sum([math.sqrt(sum([(cities[tour[(k+1) % city_count]][d] - cities[tour[k % city_count]][d])**2 for d in [0,1] ])) for k in [j,j-1,i,i-1]])
+
+def distance(tour, cities):
+    city_count = len(cities)
+    return sum([math.sqrt(sum([(cities[tour[(k+1) % city_count]][d] - cities[tour[k % city_count]][d])**2 for d in [0,1] ])) for k in range(city_count)])
+
 
 def temperature_noninteractive():
     return numpy.logspace(0,5,num=100000)[::-1]
 
 def temperature_interactive():
-    max = 10 ** 6
-    for i in reversed(range(max)):
-        if i == 0:
-            continue
-
-        print(i)
-        yield i
+    alpha = 0.99
+    temp = 10 ** 5
+    while True:
+        temp = alpha * temp
+        yield temp
         
 
 
@@ -55,22 +57,43 @@ def SA(cities, temperatures):
     iteration = 0
     tour = generate_random_tour(cities)
     city_count = len(cities)
-    for temperature in temperatures():
-        iteration = iteration + 1
-        [i,j] = sorted(random.sample(range(city_count),2))
-        newTour = tour[:i] + tour[j:j+1] +  tour[i+1:j] + tour[i:i+1] + tour[j+1:]
+    lowest_tour = None
+    lowest_distance = 10000
+    try:
+        for temperature in temperatures():
+            iteration = iteration + 1
+            [i,j] = sorted(random.sample(range(city_count),2))
+            newTour = tour[:i] + tour[j:j+1] +  tour[i+1:j] + tour[i:i+1] + tour[j+1:]
 
-        oldDistances =  sum([ math.sqrt(sum([(cities[tour[(k+1) % city_count]][d] - cities[tour[k % city_count]][d])**2 for d in [0,1] ])) for k in [j,j-1,i,i-1]])
-        newDistances =  sum([ math.sqrt(sum([(cities[newTour[(k+1) % city_count]][d] - cities[newTour[k % city_count]][d])**2 for d in [0,1] ])) for k in [j,j-1,i,i-1]])
+            oldDistances = distance_between(tour, cities, i, j)
+            newDistances = distance_between(newTour, cities, i, j)
+            oldTotalDist = distance(tour, cities)
+            newTotalDist = distance(newTour, cities)
 
-        if math.exp( (oldDistances - newDistances) / temperature) > random.random():
-            tour = copy.copy(newTour)
+            if math.exp( (oldDistances - newDistances) / temperature) > random.random():
+                tour = copy.copy(newTour)
+            
+            if newTotalDist < lowest_distance:
+                lowest_distance = newTotalDist
+                lowest_tour = copy.copy(tour)
 
-        if(iteration % 5000 == 0):
-            print("Iteration: " + str(iteration))
-            print("======")
+            if(iteration % 5000 == 0):
+                print("Iteration: " + str(iteration))
+                print("New distance: " + str(newTotalDist))
+                print("Old distance: " + str(oldTotalDist))
+                print("Best distance: " + str(lowest_distance))
+                print("======")
+    
+    except KeyboardInterrupt:
+        print("Interrupted")
 
-    return tour
+
+    if lowest_tour == None:
+        print("retiurn tour")
+        return tour
+    else:
+        print("return lwoeshy")
+        return lowest_tour
 
 
 # Initialisation des données
@@ -81,6 +104,9 @@ else:
     cities = generate_cities()
 
 city_count = len(cities)
+
+print(distance([0, 1, 2, 3], [[1, 1], [2, 1], [2, 2], [1, 2]]))
+sys.exit()
 
 # Application de la métaheuristique
 if args.n:
