@@ -59,11 +59,11 @@ def temperature_noninteractive():
 
 def temperature_interactive():
     alpha = 0.999
-    temp = 10 ** 25
+    temp = 10 ** 2
     while True:
         temp = alpha * temp
         if temp < 0.1:
-            temp = 10 ** 5
+            temp = 10 ** 1
         yield temp
 
 def explain_tour(tour, cities):
