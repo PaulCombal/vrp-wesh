@@ -5,12 +5,13 @@ import random, time, numpy as np, math, copy, sys, argparse, matplotlib.pyplot a
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", help="dataset file", default=False)
 parser.add_argument("-n", help="noninteractive", default=False)
+parser.add_argument("-k", help="trucks", default=1)
 args = parser.parse_args()
 time_start = None
 report_file = open("report.csv", "w")
 
 # Déclaration de fonctions
-def generate_cities(howmany = 15, max_coordinates = 100):
+def generate_cities(howmany = 20, max_coordinates = 100):
     return [random.sample(range(max_coordinates), 2) for _ in range(howmany)]
 
 def generate_random_tour(cities):
@@ -49,6 +50,10 @@ def dataset_name():
 def distance_between(tour, cities, i, j):
     city_count = len(cities)
     return sum([math.sqrt(sum([(cities[tour[(k+1) % city_count]][d] - cities[tour[k % city_count]][d])**2 for d in [0,1] ])) for k in [j,j-1,i,i-1]])
+
+def distance_to_next(tour, cities, index):
+    city_count = len(cities)
+    return sum([math.sqrt(sum([(cities[tour[(k+1) % city_count]][d] - cities[tour[k % city_count]][d])**2 for d in [0,1] ])) for k in [index]])
 
 def distance(tour, cities):
     city_count = len(cities)
@@ -159,3 +164,28 @@ report_file.close()
 
 # Affichage de détails
 explain_tour(tour, cities)
+
+# Division en k camions
+print("\nDivision en camions\n")
+k = int(args.k)
+tour_distance = distance(tour, cities)
+i = 0
+for truck in range(k-1):
+    distance_cumulee = 0
+    while distance_cumulee < (tour_distance / k):
+        curr = tour[i % city_count]
+        next = tour[(i + 1) % city_count]
+        distance = distance_to_next(tour, cities, i)
+
+        print("Entre {} et {} -> {}".format(cities[tour[i]], cities[tour[i+1]], distance))
+
+        distance_cumulee += distance
+        i += 1
+
+    tour.insert(i, tour[0])
+    tour.insert(i+1, tour[i+1])
+
+live_plot(tour, cities)
+
+while True:
+    time.sleep(1)
