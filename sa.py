@@ -6,13 +6,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-d", help="dataset file", default=False)
 parser.add_argument("-n", help="noninteractive", default=False)
 parser.add_argument("-k", help="trucks", default=1)
+parser.add_argument("-r", help="trucks", default=20)
 args = parser.parse_args()
 memory = psutil.Process(os.getpid()).memory_info
 time_start = None
 report_file = open("report.csv", "w")
 
 # Déclaration de fonctions
-def generate_cities(howmany = 20, max_coordinates = 100):
+def generate_cities(howmany = int(args.r), max_coordinates = 100):
     return [random.sample(range(max_coordinates), 2) for _ in range(howmany)]
 
 def generate_random_tour(cities):
