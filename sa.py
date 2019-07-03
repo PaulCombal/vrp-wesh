@@ -177,8 +177,6 @@ for truck in range(k-1):
         next = tour[(i + 1) % city_count]
         distance = distance_to_next(tour, cities, i)
 
-        print("Entre {} et {} -> {}".format(cities[tour[i]], cities[tour[i+1]], distance))
-
         distance_cumulee += distance
         i += 1
 
