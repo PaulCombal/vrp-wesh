@@ -1,12 +1,13 @@
 #!/bin/env python
 
-import random, time, numpy as np, math, copy, sys, argparse, matplotlib.pyplot as plt
+import psutil, os, random, time, numpy as np, math, copy, sys, argparse, matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", help="dataset file", default=False)
 parser.add_argument("-n", help="noninteractive", default=False)
 parser.add_argument("-k", help="trucks", default=1)
 args = parser.parse_args()
+memory = psutil.Process(os.getpid()).memory_info
 time_start = None
 report_file = open("report.csv", "w")
 
@@ -99,7 +100,7 @@ def SA(cities, temperatures):
     city_count = len(cities)
     lowest_tour = None
     lowest_distance = np.inf
-    report("iterations,temps,distance,temperature")
+    report("iterations,temps,distance,temperature,memory")
     try:
         for temperature in temperatures():
             iteration = iteration + 1
@@ -125,8 +126,9 @@ def SA(cities, temperatures):
                 print("New distance: {:10.4f}".format(newTotalDist))
                 print("Best distance: {:10.4f}".format(lowest_distance))
                 print("Temperature: " + str(temperature))
+                print("Memory used: " + str(memory().rss))
                 print("======")
-                report("{},{},{},{}".format(iteration, seconds_elapsed, lowest_distance, temperature))
+                report("{},{},{},{},{}".format(iteration, seconds_elapsed, lowest_distance, temperature, memory().rss))
                 live_plot(lowest_tour, cities)
     
     except KeyboardInterrupt:
