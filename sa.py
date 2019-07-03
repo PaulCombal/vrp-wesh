@@ -103,6 +103,7 @@ def SA(cities, temperatures):
     try:
         for temperature in temperatures():
             iteration = iteration + 1
+
             [i,j] = sorted(random.sample(range(city_count),2))
             newTour = tour[:i] + tour[j:j+1] + tour[i+1:j] + tour[i:i+1] + tour[j+1:]
 
@@ -139,6 +140,7 @@ def SA(cities, temperatures):
 
 
 # Initialisation des données
+
 plt.ion()
 plt.show()
 external_dataset = dataset_name()
@@ -166,22 +168,21 @@ report_file.close()
 explain_tour(tour, cities)
 
 # Division en k camions
-print("\nDivision en camions\n")
 k = int(args.k)
 tour_distance = distance(tour, cities)
-i = 0
+position_first_city = tour.index(0)
+position_relative_next_stop_city = 0
+initial_tour = copy.copy(tour)
+
 for truck in range(k-1):
     distance_cumulee = 0
     while distance_cumulee < (tour_distance / k):
-        curr = tour[i % city_count]
-        next = tour[(i + 1) % city_count]
-        distance = distance_to_next(tour, cities, i)
-
+        curr = initial_tour[(position_first_city + position_relative_next_stop_city) % city_count]
+        distance = distance_to_next(initial_tour, cities, position_first_city + position_relative_next_stop_city)
         distance_cumulee += distance
-        i += 1
+        position_relative_next_stop_city += 1
 
-    tour.insert(i, tour[0])
-    tour.insert(i+1, tour[i+1])
+    tour.insert((position_first_city + position_relative_next_stop_city) % city_count, 0)
 
 live_plot(tour, cities)
 
