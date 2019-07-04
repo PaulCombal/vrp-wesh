@@ -94,6 +94,22 @@ def live_plot(tour, cities):
 def report(what):
     report_file.write(what + "\n")
 
+def array_part_loop(arr, start, end):
+    arr_len = len(arr)
+    ret = []
+
+    if start > end:
+        nb_elements = arr_len - start
+        nb_elements += end
+    else:
+        return arr[start:(end + 1) % arr_len]
+    
+    for i in range(nb_elements):
+        ret.append(arr[(start + i) % arr_len])
+
+    ret.append(arr[(start + nb_elements) % arr_len])
+    return ret
+
 
 def SA(cities, temperatures):
     iteration = 0
@@ -187,7 +203,25 @@ for truck in range(k-1):
 
     tour.insert((position_first_city + position_relative_next_stop_city) % city_count, 0)
 
-live_plot(tour, cities)
+if int(args.k) <= 1:
+    live_plot(tour, cities)
+else:
+    # On insère le dernier tour
+    zero_positions = [i for i, e in enumerate(tour) if e == 0]
+    number_zeros = len(zero_positions)
+    plt.clf()
 
-while True:
-    time.sleep(1)
+    for zero_pos_i in range(len(zero_positions)):
+        tour_start_index = zero_positions[zero_pos_i]
+        tour_end_index = zero_positions[(zero_pos_i + 1) % number_zeros]
+        truck_tour = array_part_loop(tour, tour_start_index, tour_end_index)
+        truck_tour_len = len(truck_tour)
+
+        cities_x = [cities[truck_tour[i % truck_tour_len]][0] for i in range(truck_tour_len + 1)]
+        cities_y = [cities[truck_tour[i % truck_tour_len]][1] for i in range(truck_tour_len + 1)]
+        plt.plot(cities_x, cities_y, '-')
+
+    plt.pause(0.1)
+
+    while True:
+        time.sleep(1)
