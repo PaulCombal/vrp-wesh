@@ -203,9 +203,7 @@ for truck in range(k-1):
 
     tour.insert((position_first_city + position_relative_next_stop_city) % city_count, 0)
 
-if int(args.k) <= 1:
-    live_plot(tour, cities)
-else:
+if int(args.k) > 1:
     # On insère le dernier tour
     zero_positions = [i for i, e in enumerate(tour) if e == 0]
     number_zeros = len(zero_positions)
