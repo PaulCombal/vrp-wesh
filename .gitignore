@@ -5,3 +5,4 @@ share/
 instances/
 lib/
 __pycache__/
+.ipynb_checkpoints/
