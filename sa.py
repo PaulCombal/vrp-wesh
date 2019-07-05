@@ -125,22 +125,22 @@ def SA(cities, temperatures):
             [i,j] = sorted(random.sample(range(city_count),2))
             newTour = tour[:i] + tour[j:j+1] + tour[i+1:j] + tour[i:i+1] + tour[j+1:]
 
-            oldDistances = distance_between(tour, cities, i, j)
-            newDistances = distance_between(newTour, cities, i, j)
-            newTotalDist = distance(newTour, cities)
+            old_distances = distance_between(tour, cities, i, j)
+            new_distances = distance_between(newTour, cities, i, j)
+            new_tour_distance = distance(newTour, cities)
 
-            if math.exp( (oldDistances - newDistances) / temperature) > random.random():
+            if math.exp( (old_distances - new_distances) / temperature) > random.random():
                 tour = copy.copy(newTour)
             
-            if newTotalDist < lowest_distance:
-                lowest_distance = newTotalDist
+            if new_tour_distance < lowest_distance:
+                lowest_distance = new_tour_distance
                 lowest_tour = copy.copy(tour)
 
             if(iteration % 5000 == 0):
                 seconds_elapsed = time.time() - time_start
                 print("Iteration: " + str(iteration))
                 print("Elapsed: {:10.4f}s".format(seconds_elapsed))
-                print("New distance: {:10.4f}".format(newTotalDist))
+                print("New distance: {:10.4f}".format(new_tour_distance))
                 print("Best distance: {:10.4f}".format(lowest_distance))
                 print("Temperature: " + str(temperature))
                 print("Memory used: " + str(memory().rss))
